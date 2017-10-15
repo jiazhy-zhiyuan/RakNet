@@ -1,58 +1,76 @@
 cmake_minimum_required(VERSION 2.6)
-
 project(RakNet)
 
-if( NOT APPLE )
-# check 64 bit
-if( CMAKE_SIZEOF_VOID_P MATCHES "4" )
-  set( HAVE_64_BIT 0 )
-else(  CMAKE_SIZEOF_VOID_P MATCHES "4")
-  set( HAVE_64_BIT 1 )
-endif(  CMAKE_SIZEOF_VOID_P MATCHES "4")
-endif( NOT APPLE )
+set(CMAKE_MACOSX_RPATH 1)
+
+if (NOT APPLE)
+    # Check if 64-bit
+    if (CMAKE_SIZEOF_VOID_P MATCHES "4")
+        set(HAVE_64_BIT 0)
+    else (CMAKE_SIZEOF_VOID_P MATCHES "4")
+        set(HAVE_64_BIT 1)
+    endif (CMAKE_SIZEOF_VOID_P MATCHES "4")
+endif (NOT APPLE)
 
 IF (WIN32 AND NOT UNIX)
-	set (PROGRAMFILESX86 $ENV{PROGRAMFILES})
-	string(REPLACE "\\" "/" PROGRAMFILESX86 ${PROGRAMFILESX86})
+    set(PROGRAMFILESX86 $ENV{PROGRAMFILES})
+    string(REPLACE "\\" "/" PROGRAMFILESX86 ${PROGRAMFILESX86})
+ENDIF (WIN32 AND NOT UNIX)
+
+IF (WIN32 AND NOT UNIX)
+    set(RAKNET_LIBRARY_LIBS ws2_32.lib)
+ELSE (WIN32 AND NOT UNIX)
+    set(RAKNET_LIBRARY_LIBS pthread)
+ENDIF (WIN32 AND NOT UNIX)
+
+# LibDLL ------------------------------------------------------------------------------------------------------
+FILE(GLOB ALL_HEADER_SRCS ${RakNet_SOURCE_DIR}/include/*.h)
+FILE(GLOB ALL_CPP_SRCS ${RakNet_SOURCE_DIR}/src/*.cc)
+
+include_directories(${RakNet_SOURCE_DIR}/include)
+
+add_library(RakNetShared SHARED ${ALL_CPP_SRCS} ${ALL_HEADER_SRCS})
+
+IF(WIN32 AND NOT UNIX)
+	SET( CMAKE_CXX_FLAGS "/D WIN32 /D _RAKNET_DLL /D _CRT_NONSTDC_NO_DEPRECATE /D _CRT_SECURE_NO_DEPRECATE /GS- /GR- ")
 ENDIF(WIN32 AND NOT UNIX)
 
-IF (WIN32 AND NOT UNIX)
-	set(RAKNET_LIBRARY_LIBS ws2_32.lib)
+IF(WIN32 AND NOT UNIX)
+	target_link_libraries (RakNetShared ${RAKNET_LIBRARY_LIBS})
 ELSE(WIN32 AND NOT UNIX)
-	set(RAKNET_LIBRARY_LIBS pthread)
+	target_link_libraries (RakNetShared ${RAKNET_LIBRARY_LIBS})
+	# INSTALL(TARGETS RakNetDLL DESTINATION ${RakNet_SOURCE_DIR}/Lib/DLL)
+ENDIF(WIN32 AND NOT UNIX)
+# LibDLL ------------------------------------------------------------------------------------------------------
+
+# LibStatic ---------------------------------------------------------------------------------------------------
+FILE(GLOB ALL_HEADER_SRCS ${RakNet_SOURCE_DIR}/include/*.h)
+FILE(GLOB ALL_CPP_SRCS ${RakNet_SOURCE_DIR}/src/*.cc)
+
+include_directories(${RakNet_SOURCE_DIR}/include)
+
+add_library(RakNetStatic STATIC ${ALL_CPP_SRCS} ${ALL_HEADER_SRCS})
+
+IF(WIN32 AND NOT UNIX)
+	SET(CMAKE_CXX_FLAGS "/D WIN32 /D _RAKNET_LIB /D _CRT_NONSTDC_NO_DEPRECATE /D _CRT_SECURE_NO_DEPRECATE /GS- /GR- ")
 ENDIF(WIN32 AND NOT UNIX)
 
+IF(WIN32 AND NOT UNIX)
+	target_link_libraries (RakNetStatic ${RAKNET_LIBRARY_LIBS})
 
-# Options
-option( RAKNET_ENABLE_SAMPLES 	"Generate RakNet sample projects if true." 		TRUE  )
-option( RAKNET_ENABLE_DLL		"Generate the DLL project if true." 			TRUE )
-option( RAKNET_ENABLE_STATIC	"Generate the static library project if true." 	TRUE )
-option( RAKNET_GENERATE_INCLUDE_ONLY_DIR "Setup a include/RakNet/ directory in which all the headers are copied." FALSE )
+	IF(NOT ${CMAKE_GENERATOR} STREQUAL "MSYS Makefiles")
 
-set( RAKNETHEADERFILES ${RakNet_SOURCE_DIR}/Source ) #This name doesn't follow CMake conventions but for retro compatibility I'll let it there.
+		IF(MSVC10 OR MSVC11 OR MSVC12)
+			set_target_properties(RakNetStatic PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB:\"LIBCD.lib LIBCMTD.lib MSVCRT.lib\"" )
+		ELSE()
+			set_target_properties(RakNetStatic PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB:&quot;LIBCD.lib LIBCMTD.lib MSVCRT.lib&quot;" )
+		ENDIF()
 
-if( RAKNET_GENERATE_INCLUDE_ONLY_DIR )
-	set( RAKNET_INCLUDE_ONLY_DIR ${RakNet_SOURCE_DIR}/include ) # this will be visible by client code
-	set( RAKNET_NAMED_INCLUDE_ONLY_DIR ${RAKNET_INCLUDE_ONLY_DIR}/RakNet )
-	message( STATUS "Setting up the ${RAKNET_NAMED_INCLUDE_ONLY_DIR} directory..." )
-	# Now setup the include/RakNet/*.h files.
-	file( MAKE_DIRECTORY ${RAKNET_NAMED_INCLUDE_ONLY_DIR} )
-	file( COPY ${RAKNETHEADERFILES}/ DESTINATION ${RAKNET_NAMED_INCLUDE_ONLY_DIR} FILES_MATCHING PATTERN "*.h"  )
-	message( STATUS "DONE: Setting up the ${RAKNET_NAMED_INCLUDE_ONLY_DIR} directory." )
-endif()
+	ENDIF(NOT ${CMAKE_GENERATOR} STREQUAL "MSYS Makefiles")
 
-set( RAKNET_INCLUDE_DIRS ${RAKNETHEADERFILES} ${RAKNET_INCLUDE_ONLY_DIR} PARENT_SCOPE ) # Visible from outside
-
-include(./CmakeIncludes/CmakeMacros.txt)
-FIXLINKOPTIONS()
-FIXCOMPILEOPTIONS()
-
-
-add_subdirectory(Lib)
-
-
-set(RAKNET_COMMON_LIBS RakNetLibStatic)
-
-if( RAKNET_GENERATE_SAMPLES )
-	add_subdirectory(Samples)
-endif()
+ELSE(WIN32 AND NOT UNIX)
+	target_link_libraries (RakNetStatic ${RAKNET_LIBRARY_LIBS})
+	# INSTALL(TARGETS RakNetLibStatic DESTINATION ${RakNet_SOURCE_DIR}/Lib/RakNetLibStatic)
+	# INSTALL(FILES ${ALL_HEADER_SRCS} DESTINATION ${RakNet_SOURCE_DIR}/include/raknet)
+ENDIF(WIN32 AND NOT UNIX)
+# LibStatic ---------------------------------------------------------------------------------------------------
