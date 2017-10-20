@@ -41,7 +41,7 @@ class DDTCallback : public FileListTransferCBInterface {
   virtual bool OnFile(OnFileStruct *onFileStruct) {
     char fullPathToDir[1024];
 
-    if (onFileStruct->fileName && onFileStruct->fileData &&
+    if (onFileStruct->fileName[0] && onFileStruct->fileData &&
         subdirLen < strlen(onFileStruct->fileName)) {
       strcpy(fullPathToDir, outputSubdir);
       strcat(fullPathToDir, onFileStruct->fileName + subdirLen);
@@ -57,7 +57,7 @@ class DDTCallback : public FileListTransferCBInterface {
   virtual void OnFileProgress(FileProgressStruct *fps) {
     char fullPathToDir[1024];
 
-    if (fps->onFileStruct->fileName &&
+    if (fps->onFileStruct->fileName[0] &&
         subdirLen < strlen(fps->onFileStruct->fileName)) {
       strcpy(fullPathToDir, outputSubdir);
       strcat(fullPathToDir, fps->onFileStruct->fileName + subdirLen);
