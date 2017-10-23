@@ -12,4 +12,7 @@ environment:
 
 before_build:
   - cmake .
-  - dir
+
+build:
+  parallel: true
+  project: RakNet.sln
