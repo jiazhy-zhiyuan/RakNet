@@ -21,7 +21,7 @@
 #include "SocketLayer.h"
 #include "VitaIncludes.h"
 #include "WSAStartupSingleton.h"
-#include "errno.h"
+#include <errno.h>
 
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET -1
@@ -228,7 +228,7 @@ void UDPForwarder::RecvFrom(RakNet::TimeMS curTime,
     }
 #else
     if (errno != EAGAIN && errno != 0
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__WIN32)
         && errno != EWOULDBLOCK
 #endif
     ) {

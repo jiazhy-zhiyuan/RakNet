@@ -622,11 +622,10 @@ void RakNetGUID::ToString(char *dest) const {
 bool RakNetGUID::FromString(const char *source) {
   if (source == 0) return false;
 
-#if defined(WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
   g = _strtoui64(source, NULL, 10);
-
 #else
-  // Changed from g=strtoull(source,0,10); for android
+  // Changed from g = strtoull(source,0,10); for android
   g = strtoull(source, (char **)NULL, 10);
 #endif
   return true;

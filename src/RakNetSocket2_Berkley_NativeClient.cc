@@ -21,9 +21,10 @@
 
 #include "Itoa.h"
 
-// FIXME
+#if !defined(_WIN32)
 #include <stdio.h>
 #include <netdb.h>
+#endif
 
 // Shared on most platforms, but excluded from the listed
 
