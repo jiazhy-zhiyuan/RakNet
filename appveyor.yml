@@ -10,10 +10,5 @@ environment:
     - TARGET: i686-pc-windows-msvc
     - TARGET: x86_64-pc-windows-msvc
 
-build: false
-
-test_script:
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make
+before_build:
+  - cmake .
