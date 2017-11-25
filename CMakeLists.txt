@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 2.6)
 project(RakNet)
 
+set(CMAKE_CXX_STANDARD 17)
+
 # macOS fixes
-set(CMAKE_MACOSX_RPATH 1)
-set(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
-set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
-set(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
-set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH 1)
+  set(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+  set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+  set(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+  set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+endif (APPLE)
 
 if (NOT APPLE)
     # Check if 64-bit
@@ -60,9 +64,9 @@ target_link_libraries (RakNetStatic ${RAKNET_LIBRARY_LIBS})
 IF(WIN32 AND NOT UNIX)
 	IF(NOT ${CMAKE_GENERATOR} STREQUAL "MSYS Makefiles")
 		IF(MSVC10 OR MSVC11 OR MSVC12)
-			set_target_properties(RakNetStatic PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB:\"LIBCD.lib LIBCMTD.lib MSVCRT.lib\"")
+			# set_target_properties(RakNetStatic PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB:\"LIBCD.lib LIBCMTD.lib MSVCRT.lib\"")
 		ELSE()
-			set_target_properties(RakNetStatic PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB:&quot;LIBCD.lib LIBCMTD.lib MSVCRT.lib&quot;")
+			# set_target_properties(RakNetStatic PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB:&quot;LIBCD.lib LIBCMTD.lib MSVCRT.lib&quot;")
 		ENDIF()
 	ENDIF(NOT ${CMAKE_GENERATOR} STREQUAL "MSYS Makefiles")
 ENDIF(WIN32 AND NOT UNIX)
